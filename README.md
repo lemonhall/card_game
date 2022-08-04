@@ -1,4 +1,11 @@
+<img width="1017" alt="image" src="https://user-images.githubusercontent.com/637919/182925421-dd5f222a-c8b7-4a79-8530-1ecdfb47b874.png">
 
+pygelt写的card game，截图
+
+
+主要想模仿stack那个游戏，两张或者多张卡牌可以堆叠后形成新的元素
+
+非常有趣
 
 ### 建立环境
 conda create --name pygame python=3.8 --channel https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
@@ -7,13 +14,6 @@ conda create --name pygame python=3.8 --channel https://mirrors.tuna.tsinghua.ed
 conda activate pygame
 
 ### 安装
-
-https://www.pygame.org/wiki/GettingStarted
-
-pip install pygame
-
-验证安装
-python3 -m pygame.examples.aliens
 
 https://pyglet.readthedocs.io/en/latest/external_resources.html#third-party-libraries
 
