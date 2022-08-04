@@ -15,6 +15,8 @@ import pyglet
 # c = Child()          # 子类实例
 # c.myMethod()         # 子类调用重写方法
 
+#声明成全局的，每个新的card的实例也就只是持有一个这货的指针就可以了
+sweep_sound_g = pyglet.media.load('sound/mixkit-explainer-video-game-alert-sweep-236.wav')
 
 #https://pyglet.readthedocs.io/en/latest/modules/shapes.html
 #Card对象，直接继承于Rectangle类
@@ -22,6 +24,9 @@ import pyglet
 class Card(Rectangle):
     name = ""
     card_group = None
+
+    sweep_sound = sweep_sound_g
+
     """docstring for Card_manger"""
     def __init__(self,x,y,width,height,color,name):
         super().__init__(x,y,width,height,color)
@@ -46,9 +51,9 @@ class Card(Rectangle):
     def draw(self):
         super().draw()
         my_lbl = pyglet.text.Label(self.name,
-                          font_name='黑体',
-                          font_size=16,
-                          x=self.x+10, y=self.y+10)
+                          font_name='微软雅黑',
+                          font_size=12,
+                          x=self.x+6, y=self.y+10)
         my_lbl.draw()
 
     #将cardgroup的指针返回给外界
@@ -76,5 +81,18 @@ class Card(Rectangle):
             #最后一步肯定是断开指针联系
             self.card_group = None
         return True
+
+    #把自己粘附到这个卡组的坐标位置上面去
+    def uiAttchToGroup(self):
+        #取得自己所述的卡组的指针
+        myCardGroup=self.getCardGroup()
+        if myCardGroup:
+            #如果指针不为空，则拿到卡组的leader的指针
+            groupLeader=myCardGroup.getCardsList()[0]
+            self.x = groupLeader.x
+            self.y = groupLeader.y-20
+
+
+
 
 ###END OF CARD CLASS

@@ -15,7 +15,7 @@ sweep_sound = pyglet.media.load('sound/mixkit-explainer-video-game-alert-sweep-2
 
 # https://api.arcade.academy/en/latest/tutorials/card_game/index.html
 
-window = pyglet.window.Window(width=1024, height=768,caption= u"Card Game")
+window = pyglet.window.Window(width=640, height=480,caption= u"Card Game")
 
 #例子给得东西，留着这里做参照物
 label = pyglet.text.Label('Card Game',
@@ -31,8 +31,8 @@ window.push_handlers(event_logger)
 
 
 #square = shapes.Rectangle(x=200, y=200, width=200, height=200, color=(55, 55, 255))
-card1 = Card(x=200, y=200, width=60, height=80, color=(255, 55, 255),name=u"第零话")
-card2 = Card(x=300, y=300, width=60, height=80, color=(55, 55, 255),name="匪兵乙")
+card1 = Card(x=200, y=200, width=60, height=80, color=(255, 55, 255),name=u"官兵")
+card2 = Card(x=300, y=300, width=60, height=80, color=(55, 55, 255),name=u"匪兵乙")
 
 
 #初始化管理器
@@ -58,12 +58,18 @@ def on_mouse_drag(x, y, dx, dy, buttons, modifiers):
     if DragObj:
         window.set_mouse_cursor(cursor_hand)
         DragObj.move(dx,dy)
+        #让manger不停的检查是否可以成组
         cardManger.can_be_stack()
     return True
 
 #on_mouse_release(x=160, y=67, button='LEFT', modifiers=)
 @window.event
 def on_mouse_release(x, y, button, modifiers):
+    #如果在释放鼠标的那一刻，发现活动卡片有了卡组
+    if cardManger.activeCard:
+        if cardManger.activeCard.getCardGroup():
+            cardManger.activeCard.uiAttchToGroup()
+            
     cardManger.activeCard = None
     window.set_mouse_cursor(cursor_default)
     #sweep_sound.play()

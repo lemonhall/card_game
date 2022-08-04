@@ -66,29 +66,46 @@ class Card_manger():
                     temp_point = [card.x/2,card.y/2]
                     distance=self.anchor_distance(drag_card_anchor_point,temp_point)
                     if distance<15:
-                        #
+                        #如果下面的卡片的卡组不为空
                         if card.getCardGroup():
+                            #如果活动卡片的卡组为空
                             if self.activeCard.getCardGroup() == None:
+                                #当两张卡片的距离小于15，下面的卡片有卡组，活动的卡片卡组指针为空时
+                                #将活动卡片加入到下面的距离小于15的卡片的卡组当中去
                                 self.activeCard.joinCardGroup(card.getCardGroup())
+                                print("#如果活动卡片的卡组为空")
                                 self.print_card_group(card.getCardGroup().getCardsList())
+                                #一个工具方法，把自己粘附到卡组上面去
+                                self.activeCard.uiAttchToGroup()
+                                self.activeCard.sweep_sound.play()
+                            #如果活动卡片的卡组不为空？那应该是啥事儿都不做的
                             else:
-                                self.activeCard.leaveCardGroup()
-                                self.activeCard.joinCardGroup(card.getCardGroup())
-                                self.print_card_group(card.getCardGroup().getCardsList())
+                                pass
+                        #如果下面的卡组为空
                         else:
                         #如果待叠加的卡牌，没有组，那就新建一个，然后把卡牌和拖放的卡牌都弄一个组里面去
                             newCardGroup = CardGroup()
                             card.joinCardGroup(newCardGroup)
                             self.activeCard.joinCardGroup(newCardGroup)
-                            #这个时候我甚至可以链式调用
+                            #这个时候我甚至可以链式调用，然后下面的两个卡片所指向的卡组应该是同一个
+                            print("#如果下面的卡组为空")
                             self.print_card_group(card.getCardGroup().getCardsList())
+                            self.print_card_group(self.activeCard.getCardGroup().getCardsList())
+                            #一个工具方法，把自己粘附到卡组上面去
+                            self.activeCard.uiAttchToGroup()
+                            self.activeCard.sweep_sound.play()
+
                     else:
                         #距离大于15，如果活动卡牌有组，就退组
                         #print("距离>15")
                         #print(self.activeCard.getCardGroup())
                         if self.activeCard.getCardGroup():
-                            print("老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了老子退组了")
+                            orig_group = self.activeCard.getCardGroup()
+                            print("老子退组了老子退组了老子退组了,退组前打印一下：")
+                            self.print_card_group(self.activeCard.getCardGroup().getCardsList())
                             self.activeCard.leaveCardGroup()
+                            print("退组后再打印一下原来组的情况：")
+                            self.print_card_group(orig_group.getCardsList())
                         else:
                             #print("活动卡牌没有组？？")
                             pass
@@ -122,8 +139,14 @@ class Card_manger():
         my_height = obj.height
         my_color = obj.color
         my_name = obj.name
+        my_card_group = obj.getCardGroup()
         self.objects_list.remove(obj)
         my_card = Card(x=my_x, y=my_y, width=my_width, height=my_height, color=my_color,name=my_name)
+        #再次点击的时候，需要完整的clone对象，并且将置顶后的对象再次加入原对象的卡组
+        if obj.getCardGroup():
+            my_card.joinCardGroup(my_card_group)
+            obj.leaveCardGroup()
+        #然后忽然发现这里其实是有一个bug的，就是原来的这个obj啊，应该销毁的，但是我没有，所以这里会有内存泄露
         self.objects_list.append(my_card)
         return my_card
 
