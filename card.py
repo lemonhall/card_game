@@ -24,12 +24,14 @@ sweep_sound_g = pyglet.media.load('sound/mixkit-explainer-video-game-alert-sweep
 class Card(Rectangle):
     name = ""
     card_group = None
+    batch = None
 
     sweep_sound = sweep_sound_g
 
     """docstring for Card_manger"""
-    def __init__(self,x,y,width,height,color,name):
-        super().__init__(x,y,width,height,color)
+    def __init__(self,x,y,width,height,color,batch,name):
+        super().__init__(x,y,width,height,color,batch)
+        self.batch = batch
         self.name  = name
 
     #ui交互用的方法，检查鼠标指针是否是在本对象范围内
@@ -50,10 +52,12 @@ class Card(Rectangle):
     #我还得加上一些文字啥的
     def draw(self):
         super().draw()
-        my_lbl = pyglet.text.Label(self.name,
+        my_lbl = pyglet.text.Label(text=self.name,
                           font_name='微软雅黑',
                           font_size=12,
-                          x=self.x+6, y=self.y+10)
+                          x=self.x+6, 
+                          y=self.y+10,
+                          batch=self.batch)
         my_lbl.draw()
 
     #将cardgroup的指针返回给外界
@@ -91,8 +95,5 @@ class Card(Rectangle):
             groupLeader=myCardGroup.getCardsList()[0]
             self.x = groupLeader.x
             self.y = groupLeader.y-20
-
-
-
 
 ###END OF CARD CLASS

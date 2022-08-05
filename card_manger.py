@@ -4,6 +4,7 @@ from card import Card
 # Import math Library
 import math
 from card_group import CardGroup
+import copy
 
 class Card_manger():
     #当前的激活卡片，这个只在拖动情况下是有值的
@@ -11,15 +12,38 @@ class Card_manger():
     #对象列表
     objects_list = []
 
+    batch = None
+
     #堆叠列表
     stacks_list = []
     """docstring for Card_manger"""
-    def __init__(self):
+    def __init__(self,batch):
+        #从外部传入batch句柄
+        self.batch=batch
         pass
 
     #将卡牌注册到管理器里去
     def reg_obj(self,obj):
         self.objects_list.append(obj)
+
+    #将牌组注册到管理器去
+    def regCardGroup(self,card_group):
+        self.stacks_list.append(card_group)
+
+    #返回所有的牌组
+    def getCardGroupList(self):
+        return self.stacks_list
+
+    #从卡组列表当中剔除掉这张卡
+    def removeCardGroup(self,card_group):
+        self.stacks_list.remove(card_group)
+
+    #
+    def do_action(self,action):
+        for card_group in self.stacks_list:
+            action(card_group)
+
+
 
     #扫描整个管理器，并激活选中的卡牌(drag才行)
     def check(self,mouse_x,mouse_y):
@@ -37,8 +61,7 @@ class Card_manger():
             print("check 结果为："+str(index))
             #扫描完了整个管理器了，如果有结果，则index一定>=0
             if index >= 0:
-                tem_obj = self.getObjectFromIdx(index)
-                self.activeCard = self.to_top(tem_obj)
+                self.activeCard = self.to_top(self.getObjectFromIdx(index))
             #那么就将拿到的这个card的参数取出，新建一张参数上一模一样的卡牌
             #但是将其append到列表的末尾去，这样下一轮的on_draw会自动帮我们把它置顶,并且返回该卡片
                 return self.activeCard
@@ -78,15 +101,21 @@ class Card_manger():
                                 #一个工具方法，把自己粘附到卡组上面去
                                 self.activeCard.uiAttchToGroup()
                                 self.activeCard.sweep_sound.play()
+                                print("#全局卡组列表内容")
+                                print(self.getCardGroupList())
                             #如果活动卡片的卡组不为空？那应该是啥事儿都不做的
                             else:
                                 pass
                         #如果下面的卡组为空
                         else:
                         #如果待叠加的卡牌，没有组，那就新建一个，然后把卡牌和拖放的卡牌都弄一个组里面去
-                            newCardGroup = CardGroup()
+                            newCardGroup = CardGroup(self.batch)
                             card.joinCardGroup(newCardGroup)
                             self.activeCard.joinCardGroup(newCardGroup)
+                            self.regCardGroup(newCardGroup)
+                            print("#全局卡组列表内容")
+                            print(self.getCardGroupList())
+
                             #这个时候我甚至可以链式调用，然后下面的两个卡片所指向的卡组应该是同一个
                             print("#如果下面的卡组为空")
                             self.print_card_group(card.getCardGroup().getCardsList())
@@ -106,6 +135,11 @@ class Card_manger():
                             self.activeCard.leaveCardGroup()
                             print("退组后再打印一下原来组的情况：")
                             self.print_card_group(orig_group.getCardsList())
+                            #如果卡牌组没有内容了，那么就把元卡组从管理器里注销掉
+                            if orig_group.getCardsList():
+                                pass
+                            else:
+                                self.removeCardGroup(orig_group)
                         else:
                             #print("活动卡牌没有组？？")
                             pass
@@ -133,24 +167,32 @@ class Card_manger():
 
     #复制对象，并将当前对象置顶
     def to_top(self,obj):
-        my_x = obj.x
-        my_y = obj.y 
-        my_width = obj.width
-        my_height = obj.height
-        my_color = obj.color
-        my_name = obj.name
+        #这里出现了一个问题，因为我复制了对象，所以原来的对象还存在着
+
+        my_x = copy.copy(obj.x)
+        my_y = copy.copy(obj.y)
+        my_width = copy.copy(obj.width)
+        my_height = copy.copy(obj.height)
+        my_color = copy.copy(obj.color)
+        my_name = copy.copy(obj.name)
         my_card_group = obj.getCardGroup()
+
         self.objects_list.remove(obj)
-        my_card = Card(x=my_x, y=my_y, width=my_width, height=my_height, color=my_color,name=my_name)
+
+        my_card = Card(x=my_x, y=my_y, width=my_width, height=my_height,color=my_color,batch=self.batch,name=my_name)
         #再次点击的时候，需要完整的clone对象，并且将置顶后的对象再次加入原对象的卡组
         if obj.getCardGroup():
             my_card.joinCardGroup(my_card_group)
             obj.leaveCardGroup()
         #然后忽然发现这里其实是有一个bug的，就是原来的这个obj啊，应该销毁的，但是我没有，所以这里会有内存泄露
+        del obj
         self.objects_list.append(my_card)
         return my_card
 
     #on_draw的注册点，遍历整个管理器并draw
     def draw(self):
         for o in self.objects_list:
-            o.draw()
+           o.draw()
+        for card_group in self.getCardGroupList():
+             if card_group.getProcessBar():
+                 card_group.getProcessBar().draw()
